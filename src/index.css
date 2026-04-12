@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-dark: #0f1f36;
+  --color-brand-cyan: #3ac4ee;
+  --color-brand-yellow: #fdec00;
+  --font-sans: "Inter", "Akshar", ui-sans-serif, system-ui, sans-serif;
+  --brand-radius: 1.5rem;
+  --brand-radius-lg: 1.5rem;
+  --brand-radius-md: 1rem;
+  --brand-radius-sm: 0.5rem;
+}
+
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: var(--font-sans);
+    background-color: var(--color-brand-dark);
+    color: #ffffff;
+    overflow: hidden; /* Hide scroll for desktop app feel */
+  }
+
+  #root {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+}
