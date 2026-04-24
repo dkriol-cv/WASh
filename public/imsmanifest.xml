@@ -16,7 +16,8 @@
         <organization identifier="WASH_ORG">
             <title>Curso: Escola Amiga do WASH</title>
             <item identifier="ITEM_1" identifierref="RES_1">
-                <title>O Conceito WASH e a Sua Urgência</title>
+                <title>Escola Amiga do WASH — Curso Completo</title>
+                <adlcp:masteryscore>70</adlcp:masteryscore>
             </item>
         </organization>
     </organizations>
@@ -24,6 +25,16 @@
     <resources>
         <resource identifier="RES_1" type="webcontent" adlcp:scormtype="sco" href="index.html">
             <file href="index.html" />
+            <file href="assets/AVENTURA_WASH_LOGO.png" />
+            <file href="assets/AVENTURA_WASH_LOGO.webp" />
+            <file href="assets/Background-03.png" />
+            <file href="assets/Heroi Wash-01.png" />
+            <file href="assets/WASH-Cover-01.jpg" />
+            <file href="assets/WASH_LOGO-02.png" />
+            <file href="assets/WASH_LOGO.png" />
+            <file href="assets/caderno_atividades_titulo_v2_optimized.jpg" />
+            <file href="favicon.svg" />
+            <file href="icons.svg" />
         </resource>
     </resources>
 </manifest>

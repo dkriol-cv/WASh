@@ -25,43 +25,122 @@ const itemVariants = {
 
 export default function Modulo4({ currentSlide, onSlideComplete }) {
   const [planoAcao, setPlanoAcao] = useState({ prob: '', acao: '', tempo: '' });
+  const [estrelaChecks, setEstrelaChecks] = useState({});
+  const [monitorFreq, setMonitorFreq] = useState(null);
+
+  const totalChecks = Object.values(estrelaChecks).filter(Boolean).length;
 
   useEffect(() => {
-    onSlideComplete();
-  }, [currentSlide, onSlideComplete]);
+    if (currentSlide === 1) {
+      if (totalChecks >= 1) onSlideComplete();
+    } else if (currentSlide === 2) {
+      if (monitorFreq !== null) onSlideComplete();
+    } else {
+      onSlideComplete();
+    }
+  }, [currentSlide, totalChecks, monitorFreq, onSlideComplete]);
 
-  const renderSlide1 = () => (
-    <SlideContainer title="4.1 Manutenção e Gestão" subtitle="Garantindo a Durabilidade dos Serviços">
-       <div className="h-full flex flex-col gap-10">
-          <motion.div variants={containerVariants} initial="hidden" animate="visible" className="flex flex-col md:flex-row gap-8 items-center">
-             <motion.div variants={itemVariants} className="flex-1 space-y-6">
-                <p className="text-xl text-gray-400 font-bold italic leading-tight">
-                   "Uma casa de banho construída é 10% do trabalho. Mantê-la funcional todos os dias é os outros 90%."
-                </p>
-                <div className="bg-[#3ac4ee]/10 border-l-[12px] border-[#3ac4ee] p-8 rounded-2xl">
-                   <h4 className="text-[#0f1f36] font-black text-2xl uppercase italic mb-2">Compromisso Escolar</h4>
-                   <p className="text-[#0f1f36] font-medium text-lg leading-relaxed">
-                      A gestão eficaz exige o envolvimento da Direção, Professores, Alunos e Comunidade. Sem um plano de manutenção, o investimento perde-se rapidamente.
-                   </p>
+  const renderSlide1 = () => {
+    const criterios = [
+      { id: 'b1', nivel: 1, t: 'Lavagem das mãos com sabão em momentos-chave.' },
+      { id: 'b2', nivel: 1, t: 'Água potável disponível durante o turno.' },
+      { id: 'b3', nivel: 1, t: 'Pelo menos 1 ponto de lavagem próximo das casas de banho.' },
+      { id: 's1', nivel: 2, t: 'Casas de banho com privacidade (portas e trincos funcionais).' },
+      { id: 's2', nivel: 2, t: 'Rotinas de limpeza definidas e cumpridas.' },
+      { id: 's3', nivel: 2, t: 'Sabão e materiais básicos repostos com regularidade.' },
+      { id: 's4', nivel: 2, t: 'Condições mínimas para GHM (privacidade + gestão de resíduos).' },
+      { id: 'e1', nivel: 3, t: 'Acesso adaptado e inclusivo (acessibilidade e segurança).' },
+    ];
+
+    const base = criterios.filter(c => c.nivel === 1);
+    const servico = criterios.filter(c => c.nivel === 2);
+    const excel = criterios.filter(c => c.nivel === 3);
+
+    const checkedBase = base.every(c => estrelaChecks[c.id]);
+    const checkedServico = servico.every(c => estrelaChecks[c.id]);
+    const checkedExcel = excel.every(c => estrelaChecks[c.id]);
+
+    const nivel = checkedExcel && checkedServico && checkedBase ? 3
+      : checkedServico && checkedBase ? 2
+      : checkedBase ? 1 : 0;
+
+    const nivelMsg = [
+      'Assinale os critérios que a sua escola já cumpre.',
+      '⭐ Nível Básico atingido! Avance para os critérios de Serviço.',
+      '⭐⭐ Serviço garantido! Um passo para a Excelência.',
+      '⭐⭐⭐ Excelência WASH! A sua escola é uma referência.',
+    ];
+
+    const grupos = [
+      { label: '⭐ Base (1 Estrela)', items: base, color: 'border-[#fdec00] bg-[#fdec00]/10' },
+      { label: '⭐⭐ Serviço (2 Estrelas)', items: servico, color: 'border-[#3ac4ee] bg-[#3ac4ee]/10' },
+      { label: '⭐⭐⭐ Excelência (3 Estrelas)', items: excel, color: 'border-[#0f1f36] bg-[#0f1f36]/5' },
+    ];
+
+    return (
+      <SlideContainer title='4.1 A Abordagem "Três Estrelas"' subtitle="Avalie o Nível da Sua Escola">
+        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="flex flex-col h-full gap-6">
+          <motion.p variants={itemVariants} className="text-lg text-gray-500 font-medium">
+            A escola avança <span className="text-[#0f1f36] font-black">gradualmente</span>, consolidando o básico antes de investir em melhorias mais exigentes. Assinale o que já cumpre:
+          </motion.p>
+
+          <div className="flex flex-col gap-4 overflow-y-auto flex-1 pr-1">
+            {grupos.map((grupo) => (
+              <motion.div key={grupo.label} variants={itemVariants} className={`rounded-2xl border-4 p-5 ${grupo.color}`}>
+                <h4 className="font-black text-sm uppercase tracking-widest text-[#0f1f36] mb-3">{grupo.label}</h4>
+                <div className="space-y-2">
+                  {grupo.items.map(c => (
+                    <label key={c.id} className="flex items-center gap-3 cursor-pointer group">
+                      <div className="relative shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={!!estrelaChecks[c.id]}
+                          onChange={e => setEstrelaChecks(p => ({ ...p, [c.id]: e.target.checked }))}
+                          className="peer sr-only"
+                        />
+                        <div className="w-8 h-8 rounded-lg border-2 border-gray-300 peer-checked:bg-[#0f1f36] peer-checked:border-[#0f1f36] flex items-center justify-center transition-all">
+                          {estrelaChecks[c.id] && <CheckCircle className="text-[#fdec00] w-5 h-5" />}
+                        </div>
+                      </div>
+                      <span className={`font-bold text-base leading-tight transition-colors ${estrelaChecks[c.id] ? 'text-[#0f1f36]' : 'text-gray-500'}`}>{c.t}</span>
+                    </label>
+                  ))}
                 </div>
-             </motion.div>
-             <motion.div variants={itemVariants} className="shrink-0 w-64 h-64 bg-gray-50 rounded-[4rem] flex items-center justify-center border-4 border-dashed border-gray-200">
-                <PieChart className="w-32 h-32 text-gray-200" />
-             </motion.div>
-          </motion.div>
-       </div>
-    </SlideContainer>
-  );
+              </motion.div>
+            ))}
+          </div>
+
+          <AnimatePresence mode="wait">
+            {totalChecks >= 1 && (
+              <motion.div
+                key={nivel}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-[#0f1f36] text-white p-5 rounded-2xl font-black text-center text-lg shadow-xl"
+              >
+                {nivelMsg[nivel]}
+                {nivel > 0 && (
+                  <p className="text-[#3ac4ee] font-medium text-sm mt-1">
+                    Próximo passo: {nivel < 3 ? `consolidar critérios de ${nivel === 1 ? 'Serviço' : 'Excelência'}.` : 'manter e partilhar as boas práticas!'}
+                  </p>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </SlideContainer>
+    );
+  };
 
   const renderSlide2 = () => (
     <SlideContainer title="4.2 Indicadores de Monitorização" subtitle="Transformando Dados em Ação">
-       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="flex flex-col h-full gap-8">
-          <motion.div variants={itemVariants} className="bg-[#fdec00] text-[#0f1f36] font-black text-2xl p-8 text-center rounded-[3rem] shadow-xl border-4 border-white transform rotate-1">
+       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="flex flex-col h-full gap-6">
+          <motion.div variants={itemVariants} className="bg-[#fdec00] text-[#0f1f36] font-black text-xl p-6 text-center rounded-[2rem] shadow-xl border-4 border-white">
              <Activity className="mx-auto mb-2" />
              "Monitorizar não é fiscalizar: é cuidar para proteger a saúde de todos."
           </motion.div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
              {[
                { t: 'Funcionalidade', d: 'Descargas ok? Há avarias visíveis?', i: HardHat },
                { t: 'Disponibilidade', d: 'Há sabão e papel suficientes?', i: ClipboardList },
@@ -70,21 +149,49 @@ export default function Modulo4({ currentSlide, onSlideComplete }) {
              ].map((ind, i) => {
                const Icon = ind.i;
                return (
-                 <motion.div 
-                   key={i} 
+                 <motion.div
+                   key={i}
                    variants={itemVariants}
-                   whileHover={{ y: -10 }}
-                   className="p-8 rounded-[2rem] bg-white border-4 border-gray-50 shadow-lg flex flex-col items-center text-center group hover:border-[#3ac4ee] transition-all"
+                   whileHover={{ y: -8 }}
+                   className="p-6 rounded-[2rem] bg-white border-4 border-gray-50 shadow-lg flex flex-col items-center text-center group hover:border-[#3ac4ee] transition-all"
                  >
-                    <div className="w-12 h-12 rounded-xl bg-gray-50 text-gray-400 group-hover:bg-[#3ac4ee] group-hover:text-white transition-colors flex items-center justify-center mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-gray-50 text-gray-400 group-hover:bg-[#3ac4ee] group-hover:text-white transition-colors flex items-center justify-center mb-4">
                        <Icon />
                     </div>
-                    <h4 className="font-black text-xl italic text-[#0f1f36] uppercase tracking-tighter mb-2 leading-none">{ind.t}</h4>
+                    <h4 className="font-black text-lg italic text-[#0f1f36] uppercase tracking-tighter mb-1 leading-none">{ind.t}</h4>
                     <p className="text-sm font-bold text-gray-400 leading-tight">{ind.d}</p>
                  </motion.div>
                );
              })}
           </div>
+
+          <motion.div variants={itemVariants} className="bg-gray-50 border-4 border-white rounded-2xl p-5 shadow-inner">
+            <p className="font-black text-[#0f1f36] uppercase text-sm tracking-widest mb-3">
+              Quando faz mais sentido monitorizar na sua escola?
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {['Diariamente', 'Semanalmente', 'Quinzenalmente', 'Mensalmente'].map(op => (
+                <button
+                  key={op}
+                  onClick={() => setMonitorFreq(op)}
+                  className={`px-5 py-2 rounded-full font-black text-sm uppercase tracking-wide border-4 transition-all ${
+                    monitorFreq === op
+                      ? 'bg-[#0f1f36] text-[#fdec00] border-[#0f1f36]'
+                      : 'bg-white text-gray-400 border-gray-100 hover:border-[#3ac4ee]'
+                  }`}
+                >
+                  {op}
+                </button>
+              ))}
+            </div>
+            <AnimatePresence>
+              {monitorFreq && (
+                <motion.p initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="mt-3 text-sm font-bold text-[#3ac4ee]">
+                  ✅ Boa escolha! A consistência é o que garante resultados duradouros.
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </motion.div>
        </motion.div>
     </SlideContainer>
   );

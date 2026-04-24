@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import SlideContainer from '../components/SlideContainer';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  BookOpen, Gamepad2, Theater, Users, Music, 
-  CheckCircle2, AlertCircle, Star, Sparkles, GraduationCap, 
+import {
+  BookOpen, Gamepad2, Theater, Users, Music,
+  CheckCircle2, AlertCircle, Star, Sparkles, GraduationCap,
   Library, Lightbulb, HandMetal, ChevronRight,
-  ShieldCheck, Droplets, Trash2
+  ShieldCheck, Droplets, Trash2, BarChart3
 } from 'lucide-react';
 
 const containerVariants = {
@@ -26,14 +26,17 @@ const itemVariants = {
 
 export default function Modulo3({ currentSlide, onSlideComplete }) {
   const [q8Answer, setQ8Answer] = useState(null);
+  const [jogoAnswer, setJogoAnswer] = useState(null);
 
   useEffect(() => {
-    if (currentSlide === 8 && q8Answer === 'B') {
+    if (currentSlide === 2) {
+      if (jogoAnswer === 'C') onSlideComplete();
+    } else if (currentSlide === 8 && q8Answer === 'B') {
       onSlideComplete();
-    } else if (currentSlide < 8) {
+    } else if (currentSlide !== 2 && currentSlide !== 8) {
       onSlideComplete();
     }
-  }, [currentSlide, q8Answer, onSlideComplete]);
+  }, [currentSlide, q8Answer, jogoAnswer, onSlideComplete]);
 
   const renderSlide1 = () => (
     <SlideContainer title="3.1 Materiais Educativos" subtitle="Abordagem Multidisciplinar nas Aulas">
@@ -70,47 +73,84 @@ export default function Modulo3({ currentSlide, onSlideComplete }) {
     </SlideContainer>
   );
 
-  const renderSlide2 = () => (
-    <SlideContainer title="3.2 Ferramentas de Comunicação" subtitle="Criando uma Escola que Comunica Saúde">
-      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 lg:grid-cols-2 gap-10 h-full">
-         <motion.div variants={itemVariants} className="space-y-6">
-            <h3 className="text-3xl font-black text-[#0f1f36] uppercase tracking-tighter">O Poder do Visual</h3>
-            <p className="text-lg text-gray-500 font-bold leading-snug italic border-l-8 border-[#fdec00] pl-6">
-               "Um cartaz no lugar certo vale mais que mil palavras repetidas."
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-               {[
-                 { t: 'Água Potável', i: Droplets, c: 'bg-[#3ac4ee]' },
-                 { t: 'Canções WASH', i: Music, c: 'bg-[#fdec00]' },
-                 { t: 'Gestão Resíduos', i: Trash2, c: 'bg-[#0f1f36]' }
-               ].map((item, i) => {
-                 const Icon = item.i;
-                 return (
-                   <motion.div 
-                     key={i}
-                     variants={itemVariants}
-                     whileHover={{ y: -5 }}
-                     className="bg-white p-8 rounded-[2rem] border-4 border-gray-50 shadow-xl flex flex-col items-center text-center group"
-                   >
-                      <div className={`w-14 h-14 rounded-2xl ${item.c} text-white flex items-center justify-center mb-4 shadow-lg`}>
-                         <Icon className="w-7 h-7" />
-                      </div>
-                      <h4 className="font-black text-[#0f1f36] uppercase italic text-sm">{item.t}</h4>
-                   </motion.div>
-                 );
-               })}
+  const renderSlide2 = () => {
+    const passos = [
+      { icon: '🎨', t: 'Materiais', d: 'Tinta lavável ou pó de giz colorido.' },
+      { icon: '🤝', t: 'Ação', d: 'Um aluno aplica o pó e cumprimenta colegas em cadeia.' },
+      { icon: '👁️', t: 'Observação', d: 'A turma vê quantos ficaram "marcados".' },
+      { icon: '💡', t: 'Aprendizagem', d: 'Reforça a importância da lavagem correta das mãos.' },
+    ];
+    const opcoes = [
+      { l: 'A', t: 'Os micróbios espalham-se rapidamente.', c: false },
+      { l: 'B', t: 'Lavar as mãos interrompe a transmissão.', c: false },
+      { l: 'C', t: 'Ambas as anteriores.', c: true },
+    ];
+    return (
+      <SlideContainer title="3.2 O Jogo da Mão Limpa" subtitle="Simulação: Como os Micróbios se Espalham">
+        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="flex flex-col h-full gap-8">
+          <motion.p variants={itemVariants} className="text-xl text-gray-500 font-medium leading-relaxed">
+            Uma simulação simples mostra como os micróbios se espalham <span className="text-[#0f1f36] font-black underline decoration-[#fdec00] decoration-4">sem serem vistos</span>.
+          </motion.p>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {passos.map((p, i) => (
+              <motion.div
+                key={i}
+                variants={itemVariants}
+                whileHover={{ y: -6 }}
+                className="bg-white border-4 border-gray-50 rounded-[2rem] p-6 flex flex-col items-center text-center shadow-lg hover:border-[#3ac4ee] transition-all"
+              >
+                <div className="text-4xl mb-3">{p.icon}</div>
+                <div className="w-7 h-7 rounded-full bg-[#0f1f36] text-[#fdec00] font-black text-sm flex items-center justify-center mb-2">{i + 1}</div>
+                <h4 className="font-black text-[#0f1f36] uppercase text-sm tracking-tight mb-1">{p.t}</h4>
+                <p className="text-xs font-bold text-gray-400 leading-tight">{p.d}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div variants={itemVariants} className="bg-[#0f1f36] p-8 rounded-[2rem] text-white shadow-2xl">
+            <h3 className="font-black text-lg text-[#fdec00] uppercase tracking-widest mb-4">
+              Que mensagem esta atividade ajuda a transmitir?
+            </h3>
+            <div className="space-y-3">
+              {opcoes.map((op) => {
+                const chosen = jogoAnswer === op.l;
+                const resolved = jogoAnswer !== null;
+                return (
+                  <button
+                    key={op.l}
+                    onClick={() => !resolved && setJogoAnswer(op.l)}
+                    disabled={resolved}
+                    className={`w-full text-left p-5 rounded-xl border-4 font-black text-lg transition-all flex items-center justify-between
+                      ${resolved && op.c ? 'bg-green-500 border-green-400 text-white' :
+                        resolved && chosen && !op.c ? 'bg-red-500/30 border-red-400 text-red-200 opacity-60' :
+                        resolved ? 'bg-white/5 border-white/10 opacity-30' :
+                        'bg-white/10 border-white/20 hover:bg-white/20 hover:border-[#3ac4ee]'}`}
+                  >
+                    <span>{op.l}) {op.t}</span>
+                    {resolved && op.c && <CheckCircle2 className="text-white w-6 h-6 shrink-0" />}
+                  </button>
+                );
+              })}
             </div>
-         </motion.div>
-         <motion.div variants={itemVariants} className="bg-[#0f1f36] p-8 rounded-[var(--brand-radius)] text-white shadow-2xl flex flex-col justify-center border-b-8 border-[#3ac4ee]">
-            <Star className="text-[#fdec00] w-12 h-12 mb-6" />
-            <h4 className="text-2xl font-black uppercase mb-4 text-[#fdec00]">Dica de Ouro:</h4>
-            <p className="text-xl font-medium leading-relaxed">
-               Envolva os alunos na criação de <span className="text-[#3ac4ee]">mensagens locais</span> e músicas em dialeto para maior adesão e compreensão emocional.
-            </p>
-         </motion.div>
-      </motion.div>
-    </SlideContainer>
-  );
+            <AnimatePresence>
+              {jogoAnswer && (
+                <motion.p
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`mt-5 font-bold text-base rounded-xl p-4 ${jogoAnswer === 'C' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}
+                >
+                  {jogoAnswer === 'C'
+                    ? '✅ Exato! Os micróbios espalham-se por contacto e lavar as mãos interrompe essa cadeia.'
+                    : '❌ Pense de novo — as duas afirmações estão corretas! Selecione "Ambas as anteriores".'}
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </motion.div>
+      </SlideContainer>
+    );
+  };
 
   const renderSlide3 = () => (
     <SlideContainer title="3.3 Heróis do WASH" subtitle="Teatro e Dramatização Educativa">

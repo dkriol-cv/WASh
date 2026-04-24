@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import SlideContainer from '../components/SlideContainer';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, AlertCircle, Droplets, Trash2, Users, Heart, Star, ShieldCheck, Globe, HelpCircle, CheckCircle, Lock, BookOpen } from 'lucide-react';
@@ -43,7 +43,14 @@ export default function Modulo1({ currentSlide, setCanAdvance }) {
     else if (currentSlide === 3) setCanAdvance(q13Answered);
     else if (currentSlide === 4) setCanAdvance(true); 
     else if (currentSlide === 5) setCanAdvance(Object.keys(odsMatches).length === 3);
-    else if (currentSlide === 6) setCanAdvance(Object.keys(classifications).length === 3);
+    else if (currentSlide === 6) {
+      const situacoes = [
+        { id: 1, correta: 'Saúde' },
+        { id: 2, correta: 'Aprendizagem' },
+        { id: 3, correta: 'Dignidade & Inclusão' },
+      ];
+      setCanAdvance(situacoes.every(s => classifications[s.id] === s.correta));
+    }
     else if (currentSlide === 7) setCanAdvance(q17Answered);
     else setCanAdvance(true);
   }, [currentSlide, q1Answered, expandedCards, q13Answered, odsMatches, classifications, q17Answered, setCanAdvance]);
@@ -250,107 +257,153 @@ export default function Modulo1({ currentSlide, setCanAdvance }) {
      );
   };
 
-  const renderSlide5 = () => {
-    const odsList = [
-       { id: 3, label: 'ODS 3 (Saúde)', desc: 'Saúde e Bem-Estar' },
-       { id: 4, label: 'ODS 4 (Educação)', desc: 'Educação de Qualidade' },
-       { id: 6, label: 'ODS 6 (Água)', desc: 'Água e Saneamento' }
-    ];
-    const descList = [
-       { id: 4, text: 'Melhoria na concentração e desempenho.' },
-       { id: 6, text: 'Instalações de rede seguras.' },
-       { id: 3, text: 'Redução drástica de infeções.' }
-    ];
+   const renderSlide5 = () => {
+     const odsList = [
+        { id: 3, label: 'ODS 3', name: 'Saúde e Bem-Estar', desc: 'Redução de doenças e melhoria da condição física dos alunos.' },
+        { id: 4, label: 'ODS 4', name: 'Educação de Qualidade', desc: 'Melhoria da concentração e do aproveitamento escolar.' },
+        { id: 6, label: 'ODS 6', name: 'Água e Saneamento', desc: 'Garantia de água e instalações sanitárias seguras e sustentáveis.' }
+     ];
 
-    const handleOdsClick = (id) => setSelectedOds(id);
-    const handleDescClick = (id) => {
-       if (!selectedOds) return;
-       if (selectedOds === id) {
-          setOdsMatches(p => ({...p, [id]: true}));
-          setOdsMsg('Excelente! Ligação correta.');
-          setSelectedOds(null);
-       } else {
-          setOdsMsg('Quase! Tente outro bloco.');
-          setTimeout(() => setOdsMsg(''), 2000);
-          setSelectedOds(null);
-       }
-    };
+     return (
+       <SlideContainer title="1.5 ODS e WASH" subtitle="Conectando Metas Globais com a Escola">
+          <p className="mb-6 text-lg font-medium text-gray-400 italic">
+            Selecione um ODS para ver o seu impacto direto na escola.
+          </p>
 
-    return (
-      <SlideContainer title="1.5 ODS e WASH" subtitle="Conectando Metas Globais">
-         <p className="mb-8 text-xl font-medium text-gray-400">Arraste mentalmente: Escolha um ODS e depois a sua consequência.</p>
-         
-         <div className="flex gap-10 mt-4 h-full pb-10">
-            <motion.div variants={containerVariants} initial="hidden" animate="visible" className="w-1/2 flex flex-col gap-6">
-               {odsList.map(o => (
-                  <motion.button 
-                    key={o.id} 
-                    variants={itemVariants}
-                    onClick={() => !odsMatches[o.id] && handleOdsClick(o.id)}
-                    className={`p-6 rounded-[var(--brand-radius-md)] border-4 text-left font-black transition-all flex flex-col ${
-                       odsMatches[o.id] ? 'bg-green-100 border-green-500 opacity-50' :
-                       selectedOds === o.id ? 'bg-[#3ac4ee] text-white border-[#3ac4ee] shadow-2xl scale-105' : 'bg-white border-gray-100 shadow-lg hover:border-[#3ac4ee]'
-                    }`}
-                  >
-                     <span className="text-2xl">{o.label}</span>
-                     <span className={`text-xs uppercase tracking-widest mt-1 ${selectedOds === o.id ? 'text-white/80' : 'text-[#3ac4ee]'}`}>{o.desc}</span>
-                  </motion.button>
-               ))}
-            </motion.div>
-            <motion.div variants={containerVariants} initial="hidden" animate="visible" className="w-1/2 flex flex-col gap-6">
-               {descList.map(d => (
-                  <motion.button 
-                    key={d.id} 
-                    variants={itemVariants}
-                    onClick={() => !odsMatches[d.id] && handleDescClick(d.id)}
-                    className={`p-6 rounded-[var(--brand-radius-md)] border-4 text-left transition-all h-full shadow-lg ${
-                       odsMatches[d.id] ? 'bg-green-100 border-green-500 opacity-50' : 'bg-gray-50 border-gray-100 hover:border-[#3ac4ee] font-bold text-gray-700'
-                    }`}
-                  >
-                     {d.text}
-                     {odsMatches[d.id] && <CheckCircle2 className="mt-4 text-green-600" />}
-                  </motion.button>
-               ))}
-             </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {odsList.map(o => {
+              const isSelected = selectedOds === o.id;
+              const isMatched = !!odsMatches[o.id];
+              return (
+                <motion.button
+                  key={o.id}
+                  whileHover={{ y: -6 }}
+                  onClick={() => {
+                    if (isMatched) return;
+                    setSelectedOds(isSelected ? null : o.id);
+                    setOdsMsg('');
+                  }}
+                  className={`p-6 rounded-[var(--brand-radius-md)] border-4 text-left transition-all shadow-lg flex flex-col gap-2 ${
+                    isMatched ? 'border-green-500 bg-green-50 opacity-60 cursor-default' :
+                    isSelected ? 'border-[#3ac4ee] bg-[#3ac4ee]/10 shadow-xl' :
+                    'border-gray-100 bg-white hover:border-[#3ac4ee]'
+                  }`}
+                >
+                  <span className={`text-2xl font-black ${isMatched ? 'text-green-700' : 'text-[#0f1f36]'}`}>{o.label}</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-[#3ac4ee]">{o.name}</span>
+                  {isMatched && <CheckCircle2 className="text-green-500 w-5 h-5" />}
+                </motion.button>
+              );
+            })}
           </div>
-         <AnimatePresence>
+
+          {selectedOds && !odsMatches[selectedOds] && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
+              <p className="font-black text-[#0f1f36] uppercase text-sm tracking-widest mb-3">
+                Qual é o impacto do <span className="text-[#3ac4ee]">ODS {selectedOds}</span> na escola?
+              </p>
+              <div className="space-y-3">
+                {odsList.map(o => (
+                  <button
+                    key={o.id}
+                    onClick={() => {
+                      if (o.id === selectedOds) {
+                        setOdsMatches(p => ({ ...p, [selectedOds]: true }));
+                        setOdsMsg('Certo — este ODS está diretamente ligado ao impacto do WASH na escola.');
+                        setSelectedOds(null);
+                      } else {
+                        setOdsMsg('Quase — tente novamente e pense no efeito mais direto na vida escolar.');
+                        setTimeout(() => setOdsMsg(''), 2500);
+                      }
+                    }}
+                    className="w-full text-left p-4 rounded-xl border-4 border-gray-100 bg-white hover:border-[#3ac4ee] font-bold text-gray-700 transition-all hover:shadow-md"
+                  >
+                    {o.desc}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          <AnimatePresence>
             {odsMsg && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`fixed bottom-24 left-1/2 -translate-x-1/2 px-8 py-4 rounded-full font-black uppercase text-sm border-4 shadow-xl ${odsMsg.includes('Quase') ? 'bg-red-500 text-white border-red-400' : 'bg-[#3ac4ee] text-[#0f1f36] border-white'}`}>
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className={`p-4 rounded-xl font-bold text-sm border-4 ${
+                  odsMsg.includes('Certo') ? 'bg-green-50 border-green-200 text-green-800' : 'bg-orange-50 border-orange-200 text-orange-800'
+                }`}
+              >
                 {odsMsg}
               </motion.div>
             )}
-         </AnimatePresence>
-      </SlideContainer>
-    );
-  };
+          </AnimatePresence>
+       </SlideContainer>
+     );
+   };
 
   const renderSlide6 = () => {
+     const situacoes = [
+       { id: 1, t: 'Um aluno falta porque tem diarreia recorrente.', correta: 'Saúde', feedback: 'Certo — WASH reduz doenças e faltas.' },
+       { id: 2, t: 'A turma perde tempo por idas constantes à casa de banho.', correta: 'Aprendizagem', feedback: 'Certo — condições adequadas melhoram concentração e tempo útil.' },
+       { id: 3, t: 'Uma rapariga evita ir à escola durante o período menstrual.', correta: 'Dignidade & Inclusão', feedback: 'Certo — privacidade e GHM garantem participação e igualdade.' },
+     ];
+     const categorias = ['Saúde', 'Aprendizagem', 'Dignidade & Inclusão'];
+     const catColors = { 'Saúde': 'bg-blue-500', 'Aprendizagem': 'bg-[#3ac4ee]', 'Dignidade & Inclusão': 'bg-[#fdec00] text-[#0f1f36]' };
+
+     const allCorrect = situacoes.every(s => classifications[s.id] === s.correta);
+
      return (
-       <SlideContainer title="1.6 O Valor do Investimento" subtitle="Retorno Social e Humano">
-          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-[#0f1f36] text-white p-10 rounded-[3rem] border-8 border-[#3ac4ee]/20 shadow-2xl overflow-hidden relative">
-             <div className="absolute top-0 right-0 w-64 h-64 bg-[#3ac4ee]/10 blur-3xl rounded-full" />
-             <h3 className="text-3xl font-black mb-8 text-[#fdec00] uppercase tracking-tighter italic">Classifique os benefícios:</h3>
-             <div className="space-y-6">
-                {[
-                  { t: 'Redução de gastos com saúde familiar.', g: 'Saúde' },
-                  { t: 'Inclusão e dignidade para as raparigas.', g: 'Equidade' },
-                  { t: 'Melhoria direta no aproveitamento.', g: 'Educação' }
-                ].map((b, i) => (
-                  <motion.div key={i} whileHover={{ x: 10 }} className="flex items-center gap-6 p-6 bg-white/5 rounded-2xl border-2 border-white/10 group cursor-pointer hover:bg-white/10 transition-colors">
-                     <div className="w-12 h-12 rounded-full bg-[#fdec00] text-[#0f1f36] flex items-center justify-center font-black shadow-lg group-hover:bg-[#3ac4ee] transition-colors">{i+1}</div>
-                     <div className="flex-1">
-                        <p className="text-xl font-bold leading-tight">{b.t}</p>
-                        <span className="text-[10px] uppercase font-black tracking-[0.2em] text-[#3ac4ee]">{b.g}</span>
-                     </div>
+       <SlideContainer title="1.6 O Valor do Investimento" subtitle="Impacto e Equidade — Classifique as Situações">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col h-full gap-6">
+            <p className="text-lg font-medium text-gray-500">
+              Para cada situação, selecione o tipo de barreira que o WASH ajuda a remover:
+            </p>
+
+            <div className="space-y-5 flex-1">
+              {situacoes.map(s => {
+                const chosen = classifications[s.id];
+                const correct = chosen === s.correta;
+                return (
+                  <motion.div key={s.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border-4 border-gray-100 rounded-2xl p-5 shadow-lg">
+                    <p className="font-black text-[#0f1f36] text-lg mb-4 italic">"{s.t}"</p>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {categorias.map(cat => (
+                        <button
+                          key={cat}
+                          disabled={!!chosen}
+                          onClick={() => setClassifications(p => ({ ...p, [s.id]: cat }))}
+                          className={`px-4 py-2 rounded-full font-black text-sm border-4 transition-all ${
+                            chosen === cat && correct ? `${catColors[cat]} border-green-500 text-white` :
+                            chosen === cat && !correct ? 'bg-red-100 border-red-400 text-red-700' :
+                            chosen && cat !== chosen ? 'opacity-20 border-gray-100 bg-gray-50 text-gray-400' :
+                            'bg-gray-50 border-gray-100 text-gray-600 hover:border-[#3ac4ee] hover:bg-[#3ac4ee]/10'
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                    <AnimatePresence>
+                      {chosen && (
+                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`text-sm font-bold ${correct ? 'text-green-600' : 'text-red-500'}`}>
+                          {correct ? `✅ ${s.feedback}` : `❌ Tente outra categoria — pense no impacto mais direto desta situação.`}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
-                ))}
-             </div>
-             <button 
-               className="mt-12 w-full py-5 bg-[#3ac4ee] text-[#0f1f36] rounded-2xl font-black uppercase text-lg tracking-widest hover:bg-[#fdec00] transition-colors shadow-xl"
-               onClick={()=> setClassifications({1:true,2:true,3:true})}
-             >
-                Validar Benefícios
-             </button>
+                );
+              })}
+            </div>
+
+            <AnimatePresence>
+              {allCorrect && (
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-[#0f1f36] text-white p-5 rounded-2xl font-black text-center shadow-xl">
+                  🌟 "Excelente — WASH remove barreiras e cria condições para que ninguém fique para trás."
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
        </SlideContainer>
      );
