@@ -70,12 +70,12 @@ function App() {
     setCurrentView('selection');
   };
 
-  // Resume: restore position and show module selection (user picks up from there)
+  // Resume: go directly to the last slide the user was on
   const handleResume = () => {
     if (!resumeData) return;
     setCurrentModuleId(resumeData.moduleId);
     setCurrentSlideInModule(resumeData.slideId);
-    setCurrentView('selection'); // show module menu, not jump directly to slide
+    setCurrentView('course');
     setIsModuleFinished(false);
   };
 
