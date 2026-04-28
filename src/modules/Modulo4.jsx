@@ -23,7 +23,7 @@ const itemVariants = {
   visible: { x: 0, opacity: 1 }
 };
 
-export default function Modulo4({ currentSlide, onSlideComplete }) {
+export default function Modulo4({ currentSlide, setCanAdvance }) {
   const [planoAcao, setPlanoAcao] = useState({ prob: '', acao: '', tempo: '' });
   const [estrelaChecks, setEstrelaChecks] = useState({});
   const [monitorFreq, setMonitorFreq] = useState(null);
@@ -32,13 +32,13 @@ export default function Modulo4({ currentSlide, onSlideComplete }) {
 
   useEffect(() => {
     if (currentSlide === 1) {
-      if (totalChecks >= 1) onSlideComplete();
+      setCanAdvance(totalChecks >= 1);
     } else if (currentSlide === 2) {
-      if (monitorFreq !== null) onSlideComplete();
+      setCanAdvance(monitorFreq !== null);
     } else {
-      onSlideComplete();
+      setCanAdvance(true);
     }
-  }, [currentSlide, totalChecks, monitorFreq, onSlideComplete]);
+  }, [currentSlide, totalChecks, monitorFreq, setCanAdvance]);
 
   const renderSlide1 = () => {
     const criterios = [

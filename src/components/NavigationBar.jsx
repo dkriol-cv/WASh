@@ -11,7 +11,7 @@ export default function NavigationBar({
   totalGlobalSlides
 }) {
   return (
-    <footer className="h-16 sm:h-20 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] shrink-0 flex items-center justify-between px-4 sm:px-8 z-20">
+    <footer className="h-14 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] shrink-0 flex items-center justify-between px-4 sm:px-8 z-20">
       <button 
         onClick={handlePrev} 
         disabled={isFirst}

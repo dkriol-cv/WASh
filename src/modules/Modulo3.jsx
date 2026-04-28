@@ -8,6 +8,9 @@ import {
   ShieldCheck, Droplets, Trash2, BarChart3
 } from 'lucide-react';
 
+const HAND_STEPS_ORDER = ['Palma', 'Dorso', 'Entre Dedos', 'Unhas', 'Polegar', 'Punho', 'Enxaguar'];
+const HAND_STEPS_SCRAMBLED = ['Dorso', 'Unhas', 'Palma', 'Punho', 'Entre Dedos', 'Enxaguar', 'Polegar'];
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -24,19 +27,25 @@ const itemVariants = {
   visible: { y: 0, opacity: 1 }
 };
 
-export default function Modulo3({ currentSlide, onSlideComplete }) {
+export default function Modulo3({ currentSlide, setCanAdvance }) {
   const [q8Answer, setQ8Answer] = useState(null);
   const [jogoAnswer, setJogoAnswer] = useState(null);
+  const [stepSlots, setStepSlots] = useState(Array(7).fill(null));
+  const [dragOverSlot, setDragOverSlot] = useState(null);
+
+  const isHandStepsCorrect = stepSlots.join(',') === HAND_STEPS_ORDER.join(',');
 
   useEffect(() => {
     if (currentSlide === 2) {
-      if (jogoAnswer === 'C') onSlideComplete();
-    } else if (currentSlide === 8 && q8Answer === 'B') {
-      onSlideComplete();
-    } else if (currentSlide !== 2 && currentSlide !== 8) {
-      onSlideComplete();
+      setCanAdvance(jogoAnswer === 'C');
+    } else if (currentSlide === 5) {
+      setCanAdvance(isHandStepsCorrect);
+    } else if (currentSlide === 8) {
+      setCanAdvance(q8Answer === 'B');
+    } else {
+      setCanAdvance(true);
     }
-  }, [currentSlide, q8Answer, jogoAnswer, onSlideComplete]);
+  }, [currentSlide, q8Answer, jogoAnswer, isHandStepsCorrect, setCanAdvance]);
 
   const renderSlide1 = () => (
     <SlideContainer title="3.1 Materiais Educativos" subtitle="Abordagem Multidisciplinar nas Aulas">
@@ -119,31 +128,41 @@ export default function Modulo3({ currentSlide, onSlideComplete }) {
                 return (
                   <button
                     key={op.l}
-                    onClick={() => !resolved && setJogoAnswer(op.l)}
-                    disabled={resolved}
+                    onClick={() => setJogoAnswer(op.l)}
+                    disabled={jogoAnswer === 'C'}
                     className={`w-full text-left p-5 rounded-xl border-4 font-black text-lg transition-all flex items-center justify-between
-                      ${resolved && op.c ? 'bg-green-500 border-green-400 text-white' :
-                        resolved && chosen && !op.c ? 'bg-red-500/30 border-red-400 text-red-200 opacity-60' :
-                        resolved ? 'bg-white/5 border-white/10 opacity-30' :
+                      ${jogoAnswer === 'C' && op.c ? 'bg-green-500 border-green-400 text-white' :
+                        jogoAnswer && jogoAnswer === op.l && !op.c ? 'bg-red-500/30 border-red-400 text-red-200' :
+                        jogoAnswer === 'C' ? 'bg-white/5 border-white/10 opacity-30' :
                         'bg-white/10 border-white/20 hover:bg-white/20 hover:border-[#3ac4ee]'}`}
                   >
                     <span>{op.l}) {op.t}</span>
-                    {resolved && op.c && <CheckCircle2 className="text-white w-6 h-6 shrink-0" />}
+                    {jogoAnswer === 'C' && op.c && <CheckCircle2 className="text-white w-6 h-6 shrink-0" />}
                   </button>
                 );
               })}
             </div>
             <AnimatePresence>
               {jogoAnswer && (
-                <motion.p
+                <motion.div
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`mt-5 font-bold text-base rounded-xl p-4 ${jogoAnswer === 'C' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}
+                  className={`mt-5 rounded-xl p-4 flex items-center justify-between gap-4 ${jogoAnswer === 'C' ? 'bg-green-500/20' : 'bg-red-500/20'}`}
                 >
-                  {jogoAnswer === 'C'
-                    ? '✅ Exato! Os micróbios espalham-se por contacto e lavar as mãos interrompe essa cadeia.'
-                    : '❌ Pense de novo — as duas afirmações estão corretas! Selecione "Ambas as anteriores".'}
-                </motion.p>
+                  <p className={`font-bold text-base ${jogoAnswer === 'C' ? 'text-green-300' : 'text-red-300'}`}>
+                    {jogoAnswer === 'C'
+                      ? '✅ Exato! Os micróbios espalham-se por contacto e lavar as mãos interrompe essa cadeia.'
+                      : '❌ Não é bem isso — pense de novo e tente outra opção.'}
+                  </p>
+                  {jogoAnswer !== 'C' && (
+                    <button
+                      onClick={() => setJogoAnswer(null)}
+                      className="shrink-0 px-4 py-2 bg-white/20 hover:bg-white/30 text-white font-black text-xs uppercase tracking-widest rounded-lg transition-all"
+                    >
+                      Tentar novamente
+                    </button>
+                  )}
+                </motion.div>
               )}
             </AnimatePresence>
           </motion.div>
@@ -215,33 +234,126 @@ export default function Modulo3({ currentSlide, onSlideComplete }) {
   );
 
   const renderSlide5 = () => {
-    const steps = ['Palma', 'Dorso', 'Entre Dedos', 'Unhas', 'Polegar', 'Punho', 'Enxaguar'];
+    const stepBank = HAND_STEPS_SCRAMBLED.filter(s => !stepSlots.includes(s));
+    const allPlaced = stepSlots.every(Boolean);
+    const isCorrect = isHandStepsCorrect;
+
+    const handleDropOnSlot = (slotIdx, e) => {
+      e.preventDefault();
+      setDragOverSlot(null);
+      let data;
+      try { data = JSON.parse(e.dataTransfer.getData('text/plain')); } catch { return; }
+      const newSlots = [...stepSlots];
+      if (data.from === 'bank') {
+        if (newSlots[slotIdx]) return; // slot occupied — drop rejected
+        newSlots[slotIdx] = data.step;
+      } else if (data.from === 'slot') {
+        const temp = newSlots[slotIdx];
+        newSlots[slotIdx] = newSlots[data.index];
+        newSlots[data.index] = temp;
+      }
+      setStepSlots(newSlots);
+    };
+
+    const handleDropOnBank = (e) => {
+      e.preventDefault();
+      let data;
+      try { data = JSON.parse(e.dataTransfer.getData('text/plain')); } catch { return; }
+      if (data.from === 'slot') {
+        const newSlots = [...stepSlots];
+        newSlots[data.index] = null;
+        setStepSlots(newSlots);
+      }
+    };
+
     return (
-      <SlideContainer title="3.5 Higiene das Mãos" subtitle="A Técnica Correta Salva Vidas">
-         <motion.div variants={containerVariants} initial="hidden" animate="visible" className="flex flex-col h-full gap-8">
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
-               {steps.map((s, i) => (
-                  <motion.div 
-                    key={i} 
-                    variants={itemVariants}
-                    className="aspect-square bg-white border-4 border-gray-50 rounded-2xl flex flex-col items-center justify-center p-2 shadow-lg group hover:border-[#3ac4ee] transition-all"
+      <SlideContainer title="3.5 Os 7 Passos de Higiene" subtitle="Coloque os passos na ordem correta">
+        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="flex flex-col h-full gap-3">
+
+          {/* Bank */}
+          <motion.div
+            variants={itemVariants}
+            className="bg-gray-50 border-4 border-dashed border-gray-200 rounded-2xl p-3 flex flex-wrap gap-2 min-h-[56px]"
+            onDragOver={e => e.preventDefault()}
+            onDrop={handleDropOnBank}
+          >
+            {stepBank.length > 0 ? (
+              <>
+                <p className="w-full text-[10px] font-black uppercase tracking-widest text-gray-400">Passos disponíveis — arraste para o número:</p>
+                {stepBank.map(step => (
+                  <div
+                    key={step}
+                    draggable
+                    onDragStart={e => e.dataTransfer.setData('text/plain', JSON.stringify({ from: 'bank', step }))}
+                    className="px-3 py-1.5 bg-white border-4 border-[#3ac4ee] rounded-xl font-black text-sm text-[#0f1f36] cursor-grab hover:scale-105 transition-all shadow-sm select-none"
                   >
-                     <div className="text-3xl font-black text-[#0f1f36]/20 group-hover:text-[#3ac4ee] transition-colors mb-2">{i + 1}</div>
-                     <div className="font-black text-xs uppercase tracking-tighter text-[#0f1f36]">{s}</div>
-                  </motion.div>
-               ))}
-            </div>
-            
-            <motion.div variants={itemVariants} className="flex-1 bg-[#3ac4ee] text-[#0f1f36] p-8 rounded-[4rem] flex flex-col md:flex-row gap-8 items-center border-b-8 border-[#0f1f36] shadow-2xl">
-               <HandMetal className="w-24 h-24 shrink-0 drop-shadow-xl" />
-               <div>
-                  <h4 className="text-2xl font-black uppercase mb-4">Regra dos 20 Segundos</h4>
-                  <p className="text-lg font-bold leading-tight opacity-90">
-                     Lavar as mãos deve durar o tempo de cantar "Parabéns a Você" duas vezes. É o tempo necessário para que o sabão elimine 99% dos germes.
-                  </p>
-               </div>
-            </motion.div>
-         </motion.div>
+                    {step}
+                  </div>
+                ))}
+              </>
+            ) : (
+              <p className="text-xs font-bold text-gray-400 italic w-full text-center">
+                {isCorrect ? '✅ Ordem perfeita!' : 'Todos os passos foram colocados — verifique se estão certos.'}
+              </p>
+            )}
+          </motion.div>
+
+          {/* Numbered slots */}
+          <motion.div variants={itemVariants} className="grid grid-cols-7 gap-2 flex-1">
+            {stepSlots.map((step, i) => (
+              <div
+                key={i}
+                className="flex flex-col items-center gap-1"
+                onDragOver={e => { e.preventDefault(); setDragOverSlot(i); }}
+                onDragLeave={() => setDragOverSlot(null)}
+                onDrop={e => handleDropOnSlot(i, e)}
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-sm shadow transition-all ${dragOverSlot === i ? 'bg-[#3ac4ee] text-white scale-110' : 'bg-[#0f1f36] text-[#fdec00]'}`}>
+                  {i + 1}
+                </div>
+                {step ? (
+                  <div
+                    draggable
+                    onDragStart={e => e.dataTransfer.setData('text/plain', JSON.stringify({ from: 'slot', index: i, step }))}
+                    className={`flex-1 w-full flex items-center justify-center text-center rounded-xl border-4 p-1 text-[10px] font-black uppercase tracking-tight cursor-grab select-none transition-all ${
+                      isCorrect ? 'bg-green-100 border-green-400 text-green-800' :
+                      allPlaced && step !== HAND_STEPS_ORDER[i] ? 'bg-red-50 border-red-300 text-red-700' :
+                      dragOverSlot === i ? 'border-[#3ac4ee] bg-[#3ac4ee]/10' :
+                      'bg-white border-[#3ac4ee]/50 text-[#0f1f36]'
+                    }`}
+                  >
+                    {step}
+                  </div>
+                ) : (
+                  <div className={`flex-1 w-full rounded-xl border-4 border-dashed flex items-center justify-center text-xs font-bold transition-all ${
+                    dragOverSlot === i ? 'border-[#3ac4ee] bg-[#3ac4ee]/10 text-[#3ac4ee]' : 'border-gray-200 bg-gray-50 text-gray-300'
+                  }`}>
+                    ?
+                  </div>
+                )}
+              </div>
+            ))}
+          </motion.div>
+
+          {/* Feedback */}
+          <AnimatePresence mode="wait">
+            {isCorrect ? (
+              <motion.div key="ok" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-[#3ac4ee] text-[#0f1f36] p-3 rounded-2xl font-black text-center shadow-xl flex items-center gap-3 justify-center text-sm">
+                <HandMetal className="w-5 h-5 shrink-0" />
+                Perfeito! Estes 7 passos, feitos em 20 segundos, eliminam 99% dos germes.
+              </motion.div>
+            ) : allPlaced ? (
+              <motion.div key="wrong" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-orange-50 border-4 border-orange-200 p-3 rounded-xl text-orange-700 font-bold text-sm text-center">
+                Algum passo está fora de ordem — arraste para reorganizar ou volte os passos ao banco.
+              </motion.div>
+            ) : (
+              <motion.div key="hint" variants={itemVariants} className="bg-[#3ac4ee]/10 border-2 border-[#3ac4ee]/20 p-2.5 rounded-xl flex items-center gap-2 text-[#0f1f36] text-xs font-bold">
+                <HandMetal className="w-4 h-4 text-[#3ac4ee] shrink-0" />
+                Regra dos 20 Segundos: lavar as mãos deve durar o tempo de cantar "Parabéns a Você" duas vezes.
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </SlideContainer>
     );
   };
@@ -327,7 +439,7 @@ export default function Modulo3({ currentSlide, onSlideComplete }) {
     <SlideContainer title="3.8 Consolidação" subtitle="Avalie a sua Aprendizagem">
        <div className="h-full flex flex-col justify-center max-w-4xl mx-auto">
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-gray-50 border-4 border-white p-12 rounded-[4rem] shadow-2xl relative">
-             <div className="absolute -top-6 left-10 bg-[#0f1f36] text-[#fdec00] px-8 py-2 rounded-full font-black uppercase text-xs tracking-widest border-4 border-white">Pergunta de Encerramento</div>
+             <div className="absolute -top-6 left-10 bg-[#0f1f36] text-[#fdec00] px-8 py-2 rounded-full font-black uppercase text-xs tracking-widest border-4 border-white">Pergunta de Acompanhamento</div>
              <h2 className="text-2xl sm:text-3xl font-black mb-10 text-[#0f1f36] leading-tight">
                 "Ao criar um WASH Clube na sua escola, qual é o principal objetivo pedagógico e prático?"
              </h2>
@@ -340,18 +452,19 @@ export default function Modulo3({ currentSlide, onSlideComplete }) {
                    const isSelected = q8Answer === opt.l;
                    const isCorrect = opt.c;
                    return (
-                     <button 
+                     <button
                         key={opt.l}
                         onClick={() => setQ8Answer(opt.l)}
-                        disabled={q8Answer && q8Answer === 'B'}
+                        disabled={q8Answer === 'B'}
                         className={`w-full text-left p-6 rounded-[2rem] border-4 font-black text-xl transition-all flex items-center justify-between group ${
                            isSelected && isCorrect ? 'bg-green-100 border-green-500 text-green-900 shadow-md' :
                            isSelected && !isCorrect ? 'bg-red-50 border-red-500 opacity-50' :
+                           q8Answer === 'B' ? 'opacity-30 border-gray-100' :
                            'bg-white border-gray-100 hover:border-[#3ac4ee] hover:shadow-xl'
                         }`}
                      >
                         <span className="flex gap-4">
-                           <span className={`w-8 h-8 rounded-full flex items-center justify-center bg-gray-50 text-gray-400 group-hover:bg-[#3ac4ee] group-hover:text-white transition-colors`}>{opt.l}</span>
+                           <span className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-50 text-gray-400 group-hover:bg-[#3ac4ee] group-hover:text-white transition-colors">{opt.l}</span>
                            {opt.t}
                         </span>
                         {isSelected && isCorrect && <CheckCircle2 className="text-green-600" />}
@@ -360,10 +473,24 @@ export default function Modulo3({ currentSlide, onSlideComplete }) {
                 })}
              </div>
              <AnimatePresence>
-                {q8Answer === 'B' && (
-                   <motion.div initial={{opacity:0, height: 0}} animate={{opacity:1, height: 'auto'}} className="mt-8 p-6 bg-[#3ac4ee]/10 border-l-8 border-[#3ac4ee] text-[#0f1f36] font-black rounded-r-2xl text-lg italic shadow-sm">
-                      <div className="flex gap-3 items-center mb-1"><Sparkles className="w-5 h-5 text-[#3ac4ee] fill-[#3ac4ee]" /> <span>Precisamente!</span></div>
-                      O WASH Clube reforça a responsabilidade e torna as práticas sustentáveis a longo prazo.
+                {q8Answer && (
+                   <motion.div initial={{opacity:0, height: 0}} animate={{opacity:1, height: 'auto'}} className={`mt-8 p-6 rounded-r-2xl text-lg font-black shadow-sm flex items-center justify-between gap-4 ${q8Answer === 'B' ? 'bg-[#3ac4ee]/10 border-l-8 border-[#3ac4ee] text-[#0f1f36] italic' : 'bg-red-50 border-l-8 border-red-400 text-red-800'}`}>
+                      {q8Answer === 'B' ? (
+                        <div>
+                          <div className="flex gap-3 items-center mb-1"><Sparkles className="w-5 h-5 text-[#3ac4ee] fill-[#3ac4ee]" /> <span>Precisamente!</span></div>
+                          O WASH Clube reforça a responsabilidade e torna as práticas sustentáveis a longo prazo.
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between w-full gap-4">
+                          <span>❌ Não é bem isso — pense no papel dos alunos. Tente outra resposta.</span>
+                          <button
+                            onClick={() => setQ8Answer(null)}
+                            className="shrink-0 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-black text-xs uppercase tracking-widest rounded-lg transition-all"
+                          >
+                            Tentar novamente
+                          </button>
+                        </div>
+                      )}
                    </motion.div>
                 )}
              </AnimatePresence>

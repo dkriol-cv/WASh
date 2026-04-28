@@ -16,8 +16,8 @@ import Modulo4 from './modules/Modulo4';
 import Modulo5 from './modules/Modulo5';
 
 function App() {
-  const { scorm, completeCourse, saveScore } = useScorm();
-  
+  const { isReady, lessonStatus, score, resumeData, saveProgress, saveScore, completeCourse, clearProgress } = useScorm();
+
   // Stages: 'welcome' | 'selection' | 'course'
   const [currentView, setCurrentView] = useState('welcome');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -43,8 +43,47 @@ function App() {
     }
   }, [currentSlideInModule, currentModuleId, currentView]);
 
+  // Restore unlock state silently when SCORM is ready and resume data exists
+  useEffect(() => {
+    if (!isReady || !resumeData) return;
+    setMaxUnlockedModule(resumeData.maxUnlockedModule || 1);
+    setMaxUnlockedSlidePerModule(resumeData.maxUnlockedSlidePerModule || { 1: 1 });
+  }, [isReady]); // intentionally run only once on ready
+
+  // Auto-save progress to SCORM on every slide change
+  useEffect(() => {
+    if (!isReady || currentView !== 'course') return;
+    saveProgress({
+      moduleId: currentModuleId,
+      slideId: currentSlideInModule,
+      view: 'course',
+      maxUnlockedModule,
+      maxUnlockedSlidePerModule,
+    });
+  }, [isReady, currentView, currentModuleId, currentSlideInModule]);
+
   const handleStart = () => {
     setCurrentView('selection');
+  };
+
+  // Resume from last saved position
+  const handleResume = () => {
+    if (!resumeData) return;
+    setCurrentModuleId(resumeData.moduleId);
+    setCurrentSlideInModule(resumeData.slideId);
+    setCurrentView('course');
+    setIsModuleFinished(false);
+  };
+
+  // Start over — clear all SCORM progress
+  const handleStartFresh = () => {
+    clearProgress();
+    setCurrentModuleId(1);
+    setCurrentSlideInModule(1);
+    setMaxUnlockedModule(1);
+    setMaxUnlockedSlidePerModule({ 1: 1 });
+    setCurrentView('selection');
+    setIsModuleFinished(false);
   };
 
   const handleSelectModule = (id) => {
@@ -132,7 +171,7 @@ function App() {
   const progressPercent = Math.min(100, Math.round((currentGlobalSlide / totalSlides) * 100));
 
   return (
-    <div className="flex flex-col h-screen w-full bg-[#0f1f36] text-white font-sans overflow-hidden">
+    <div className="flex flex-col h-full w-full bg-[#0f1f36] text-white font-sans overflow-hidden">
       {/* Header */}
       <header className="h-16 flex items-center justify-between px-4 sm:px-10 bg-white text-[#0f1f36] shadow-md z-30 shrink-0 border-b-4 border-[#3ac4ee]">
         <div className="flex items-center gap-4">
@@ -182,8 +221,15 @@ function App() {
       <main className="flex-1 overflow-hidden relative bg-[url('./assets/Background-03.png')] bg-cover bg-center bg-no-repeat bg-fixed">
         <div className="absolute inset-0 bg-[#0f1f36]/85 backdrop-blur-[1px]" />
         
-        <div className="relative z-10 w-full max-w-7xl mx-auto h-full p-4 sm:p-8 flex flex-col overflow-y-auto custom-scrollbar">
-          {currentView === 'welcome' && <WelcomeScreen onStart={handleStart} />}
+        <div className="relative z-10 w-full max-w-7xl mx-auto h-full p-3 sm:p-5 flex flex-col overflow-y-auto custom-scrollbar">
+          {currentView === 'welcome' && (
+            <WelcomeScreen
+              onStart={handleStart}
+              onResume={resumeData ? handleResume : null}
+              onStartFresh={resumeData ? handleStartFresh : null}
+              resumeInfo={resumeData}
+            />
+          )}
           {currentView === 'selection' && (
             <ModuleSelection 
               maxUnlockedModule={maxUnlockedModule} 

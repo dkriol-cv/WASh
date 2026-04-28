@@ -31,6 +31,10 @@ export default function Modulo1({ currentSlide, setCanAdvance }) {
   // State for Slide 5 Matching
   const [selectedOds, setSelectedOds] = useState(null);
   const [odsMsg, setOdsMsg] = useState('');
+
+  // State for Slide 6 Drag-and-Drop
+  const [dragOverCat, setDragOverCat] = useState(null);
+  const [wrongClassId, setWrongClassId] = useState(null);
   
   // State for Slide 7 Knowledge Check
   const [showFeedbackCheck, setShowFeedbackCheck] = useState(false);
@@ -345,62 +349,123 @@ export default function Modulo1({ currentSlide, setCanAdvance }) {
 
   const renderSlide6 = () => {
      const situacoes = [
-       { id: 1, t: 'Um aluno falta porque tem diarreia recorrente.', correta: 'Saúde', feedback: 'Certo — WASH reduz doenças e faltas.' },
-       { id: 2, t: 'A turma perde tempo por idas constantes à casa de banho.', correta: 'Aprendizagem', feedback: 'Certo — condições adequadas melhoram concentração e tempo útil.' },
-       { id: 3, t: 'Uma rapariga evita ir à escola durante o período menstrual.', correta: 'Dignidade & Inclusão', feedback: 'Certo — privacidade e GHM garantem participação e igualdade.' },
+       { id: 1, t: 'Um aluno falta porque tem diarreia recorrente.', correta: 'Saúde', feedback: 'WASH reduz doenças e faltas.' },
+       { id: 2, t: 'A turma perde tempo por idas constantes à casa de banho.', correta: 'Aprendizagem', feedback: 'Condições adequadas melhoram concentração e tempo útil.' },
+       { id: 3, t: 'Uma rapariga evita ir à escola durante o período menstrual.', correta: 'Dignidade & Inclusão', feedback: 'Privacidade e GHM garantem participação e igualdade.' },
      ];
-     const categorias = ['Saúde', 'Aprendizagem', 'Dignidade & Inclusão'];
-     const catColors = { 'Saúde': 'bg-blue-500', 'Aprendizagem': 'bg-[#3ac4ee]', 'Dignidade & Inclusão': 'bg-[#fdec00] text-[#0f1f36]' };
+     const categorias = [
+       { name: 'Saúde', icon: '💙', border: 'border-blue-400', bg: 'bg-blue-50', text: 'text-blue-800' },
+       { name: 'Aprendizagem', icon: '📚', border: 'border-[#3ac4ee]', bg: 'bg-[#3ac4ee]/10', text: 'text-[#0f1f36]' },
+       { name: 'Dignidade & Inclusão', icon: '🌟', border: 'border-[#fdec00]', bg: 'bg-[#fdec00]/20', text: 'text-[#0f1f36]' },
+     ];
 
      const allCorrect = situacoes.every(s => classifications[s.id] === s.correta);
+     const unplaced = situacoes.filter(s => !classifications[s.id]);
+
+     const handleDropOnCat = (catName, e) => {
+       e.preventDefault();
+       setDragOverCat(null);
+       const sitId = parseInt(e.dataTransfer.getData('text/plain'));
+       const sit = situacoes.find(s => s.id === sitId);
+       if (!sit || classifications[sit.id]) return;
+       if (sit.correta === catName) {
+         setClassifications(p => ({ ...p, [sit.id]: catName }));
+       } else {
+         setWrongClassId(sitId);
+         setTimeout(() => setWrongClassId(null), 1000);
+       }
+     };
 
      return (
-       <SlideContainer title="1.6 O Valor do Investimento" subtitle="Impacto e Equidade — Classifique as Situações">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col h-full gap-6">
-            <p className="text-lg font-medium text-gray-500">
-              Para cada situação, selecione o tipo de barreira que o WASH ajuda a remover:
-            </p>
+       <SlideContainer title="1.6 O Valor do Investimento" subtitle="Arraste cada situação para a categoria certa">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col h-full gap-4">
 
-            <div className="space-y-5 flex-1">
-              {situacoes.map(s => {
-                const chosen = classifications[s.id];
-                const correct = chosen === s.correta;
+            {/* Bank of draggable cards */}
+            <div
+              className="flex flex-wrap gap-3 min-h-[60px]"
+              onDragOver={e => e.preventDefault()}
+            >
+              {unplaced.length > 0 && (
+                <p className="w-full text-xs font-black uppercase tracking-widest text-gray-400 mb-1">
+                  Arraste cada situação para a categoria certa ↓
+                </p>
+              )}
+              {unplaced.map(s => (
+                <motion.div
+                  key={s.id}
+                  layout
+                  draggable
+                  onDragStart={e => { e.dataTransfer.setData('text/plain', s.id.toString()); }}
+                  animate={wrongClassId === s.id ? { x: [-8, 8, -8, 8, 0], transition: { duration: 0.4 } } : {}}
+                  className={`cursor-grab active:cursor-grabbing select-none p-3 rounded-xl border-4 shadow-md font-bold text-[#0f1f36] text-sm leading-snug flex-1 min-w-[180px] transition-colors ${
+                    wrongClassId === s.id
+                      ? 'border-red-400 bg-red-50'
+                      : 'bg-white border-gray-200 hover:border-[#3ac4ee]'
+                  }`}
+                >
+                  <span className="text-gray-400 mr-2">⠿</span>
+                  "{s.t}"
+                </motion.div>
+              ))}
+              {unplaced.length === 0 && !allCorrect && (
+                <p className="text-sm font-bold text-orange-500 italic">Alguma situação foi colocada errada — não aparece aqui.</p>
+              )}
+            </div>
+
+            {/* Drop zones */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1">
+              {categorias.map(cat => {
+                const placed = situacoes.filter(s => classifications[s.id] === cat.name);
+                const isOver = dragOverCat === cat.name;
                 return (
-                  <motion.div key={s.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border-4 border-gray-100 rounded-2xl p-5 shadow-lg">
-                    <p className="font-black text-[#0f1f36] text-lg mb-4 italic">"{s.t}"</p>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {categorias.map(cat => (
-                        <button
-                          key={cat}
-                          disabled={!!chosen}
-                          onClick={() => setClassifications(p => ({ ...p, [s.id]: cat }))}
-                          className={`px-4 py-2 rounded-full font-black text-sm border-4 transition-all ${
-                            chosen === cat && correct ? `${catColors[cat]} border-green-500 text-white` :
-                            chosen === cat && !correct ? 'bg-red-100 border-red-400 text-red-700' :
-                            chosen && cat !== chosen ? 'opacity-20 border-gray-100 bg-gray-50 text-gray-400' :
-                            'bg-gray-50 border-gray-100 text-gray-600 hover:border-[#3ac4ee] hover:bg-[#3ac4ee]/10'
-                          }`}
-                        >
-                          {cat}
-                        </button>
-                      ))}
-                    </div>
+                  <div
+                    key={cat.name}
+                    onDragOver={e => { e.preventDefault(); setDragOverCat(cat.name); }}
+                    onDragLeave={() => setDragOverCat(null)}
+                    onDrop={e => handleDropOnCat(cat.name, e)}
+                    className={`rounded-2xl border-4 p-3 flex flex-col gap-2 transition-all ${cat.bg} ${cat.border} ${isOver ? 'scale-[1.02] shadow-xl ring-4 ring-[#3ac4ee]/30' : ''}`}
+                  >
+                    <h4 className={`font-black text-sm uppercase tracking-widest flex items-center gap-1.5 ${cat.text}`}>
+                      <span>{cat.icon}</span> {cat.name}
+                    </h4>
                     <AnimatePresence>
-                      {chosen && (
-                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`text-sm font-bold ${correct ? 'text-green-600' : 'text-red-500'}`}>
-                          {correct ? `✅ ${s.feedback}` : `❌ Tente outra categoria — pense no impacto mais direto desta situação.`}
-                        </motion.p>
-                      )}
+                      {placed.map(s => {
+                        const sit = situacoes.find(x => x.id === s.id);
+                        return (
+                          <motion.div
+                            key={s.id}
+                            initial={{ scale: 0.85, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="bg-white rounded-lg p-2 text-xs font-bold text-[#0f1f36] shadow border-2 border-green-300 flex items-start gap-2"
+                          >
+                            <CheckCircle2 className="text-green-500 shrink-0 w-4 h-4 mt-0.5" />
+                            <span>"{sit.t}"</span>
+                          </motion.div>
+                        );
+                      })}
                     </AnimatePresence>
-                  </motion.div>
+                    {placed.length === 0 && (
+                      <div className={`flex-1 flex items-center justify-center text-xs font-black uppercase tracking-widest opacity-30 ${cat.text}`}>
+                        {isOver ? '✨ Soltar aqui' : 'Arrastar aqui'}
+                      </div>
+                    )}
+                    {placed.length > 0 && placed.length < situacoes.filter(s => s.correta === cat.name).length && (
+                      <div className="text-xs font-bold opacity-30 text-center">+ Arraste mais</div>
+                    )}
+                  </div>
                 );
               })}
             </div>
 
             <AnimatePresence>
               {allCorrect && (
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-[#0f1f36] text-white p-5 rounded-2xl font-black text-center shadow-xl">
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-[#0f1f36] text-white p-4 rounded-2xl font-black text-center shadow-xl text-sm">
                   🌟 "Excelente — WASH remove barreiras e cria condições para que ninguém fique para trás."
+                </motion.div>
+              )}
+              {wrongClassId && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="bg-orange-50 border-4 border-orange-200 p-3 rounded-xl text-orange-700 font-bold text-sm text-center">
+                  ❌ Categoria errada — tente outra!
                 </motion.div>
               )}
             </AnimatePresence>
@@ -420,7 +485,7 @@ export default function Modulo1({ currentSlide, setCanAdvance }) {
        <SlideContainer title="1.7 Desafio Final" subtitle="Teste os seus conhecimentos">
           <div className="h-full flex flex-col justify-center max-w-4xl mx-auto">
              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-gray-50 border-4 border-white p-10 rounded-[3rem] shadow-2xl relative">
-                <div className="absolute -top-6 left-10 bg-[#0f1f36] text-[#fdec00] px-6 py-2 rounded-full font-black uppercase text-xs tracking-widest border-4 border-white">Pergunta Final</div>
+                <div className="absolute -top-6 left-10 bg-[#0f1f36] text-[#fdec00] px-6 py-2 rounded-full font-black uppercase text-xs tracking-widest border-4 border-white">Pergunta de Acompanhamento</div>
                 <p className="text-2xl sm:text-3xl font-black mb-10 text-[#0f1f36] leading-tight">
                    De que forma o WASH atua como ferramenta de inclusão para as raparigas?
                 </p>
@@ -430,28 +495,39 @@ export default function Modulo1({ currentSlide, setCanAdvance }) {
                      { t: 'Privacidade e higiene (GHM) evitam faltas escolares.', c: true },
                      { t: 'Reforçando punições por falta de higiene.', c: false }
                    ].map((ans, i) => (
-                      <button 
+                      <button
                         key={i}
-                        onClick={()=>handleAnswer(ans.c)}
-                        disabled={showFeedbackCheck && isCorrectCheck}
+                        onClick={() => !isCorrectCheck && handleAnswer(ans.c)}
+                        disabled={isCorrectCheck}
                         className={`w-full p-6 border-4 text-left rounded-[var(--brand-radius-md)] text-xl font-black transition-all flex items-center justify-between ${
-                          showFeedbackCheck && ans.c ? 'bg-green-100 border-green-500 text-green-900 shadow-md' :
-                          showFeedbackCheck && !ans.c ? 'opacity-30 border-gray-100' :
+                          isCorrectCheck && ans.c ? 'bg-green-100 border-green-500 text-green-900 shadow-md' :
+                          isCorrectCheck && !ans.c ? 'opacity-30 border-gray-100' :
+                          showFeedbackCheck && !ans.c ? 'opacity-40 border-red-200 bg-red-50' :
                           'bg-white border-gray-100 hover:border-[#3ac4ee] hover:shadow-xl'
                         }`}
                       >
                          <span>{String.fromCharCode(65+i)}) {ans.t}</span>
-                         {showFeedbackCheck && ans.c && <CheckCircle2 className="text-green-600" />}
+                         {isCorrectCheck && ans.c && <CheckCircle2 className="text-green-600" />}
                       </button>
                    ))}
                 </div>
                 <AnimatePresence>
                    {showFeedbackCheck && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className={`mt-8 p-6 rounded-2xl flex items-center gap-4 text-lg font-bold border-4 ${isCorrectCheck ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
-                         <div className={`p-2 rounded-lg ${isCorrectCheck ? 'bg-green-500' : 'bg-red-500'} text-white`}>
-                           {isCorrectCheck ? <Star /> : <AlertCircle />}
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className={`mt-8 p-6 rounded-2xl flex items-center justify-between gap-4 text-lg font-bold border-4 ${isCorrectCheck ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
+                         <div className="flex items-center gap-4">
+                           <div className={`p-2 rounded-lg ${isCorrectCheck ? 'bg-green-500' : 'bg-red-500'} text-white shrink-0`}>
+                             {isCorrectCheck ? <Star /> : <AlertCircle />}
+                           </div>
+                           <p>{isCorrectCheck ? 'Fantástico! Compreendeu o impacto social e de género do WASH.' : 'Reveja o impacto do WASH na privacidade e GHM das raparigas.'}</p>
                          </div>
-                         <p>{isCorrectCheck ? 'Fantástico! Compreendeu o impacto social e de gênero do projeto.' : 'Reveja o impacto do WASH na privacidade e GHM.'}</p>
+                         {!isCorrectCheck && (
+                           <button
+                             onClick={() => setShowFeedbackCheck(false)}
+                             className="shrink-0 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-black text-xs uppercase tracking-widest rounded-lg transition-all"
+                           >
+                             Tentar novamente
+                           </button>
+                         )}
                       </motion.div>
                    )}
                 </AnimatePresence>
