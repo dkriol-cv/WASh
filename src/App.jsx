@@ -179,7 +179,7 @@ function App() {
   return (
     <div className="flex flex-col h-full w-full bg-[#0f1f36] text-white font-sans overflow-hidden">
       {/* Header */}
-      <header className="h-16 flex items-center justify-between px-4 sm:px-10 bg-white text-[#0f1f36] shadow-md z-30 shrink-0 border-b-4 border-[#3ac4ee]">
+      <header className="h-12 flex items-center justify-between px-4 sm:px-8 bg-white text-[#0f1f36] shadow-md z-30 shrink-0 border-b-4 border-[#3ac4ee]">
         <div className="flex items-center gap-4">
           <button 
             onClick={handleHome}
@@ -188,7 +188,7 @@ function App() {
           >
             <Home className="w-6 h-6" />
           </button>
-          <img src="./assets/WASH_LOGO.png" alt="WASH Logo" className="h-10 object-contain hidden sm:block" />
+          <img src="./assets/WASH_LOGO.png" alt="WASH Logo" className="h-8 object-contain hidden sm:block" />
           <h1 className="font-bold text-lg hidden lg:block text-[#0f1f36]">Escola Amiga do WASH</h1>
         </div>
         
@@ -199,7 +199,7 @@ function App() {
                 <p className="text-[10px] font-black uppercase tracking-widest text-[#3ac4ee]">Módulo {currentModuleId}</p>
                 <p className="text-sm font-bold truncate max-w-[150px] lg:max-w-[300px]">{currentModule.title}</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-[#fdec00] text-[#0f1f36] flex items-center justify-center font-black border-2 border-[#fdec00] shadow-sm shrink-0">
+              <div className="w-8 h-8 rounded-full bg-[#fdec00] text-[#0f1f36] flex items-center justify-center font-black border-2 border-[#fdec00] shadow-sm shrink-0 text-sm">
                 {currentModuleId}
               </div>
             </div>
@@ -227,7 +227,7 @@ function App() {
       <main className="flex-1 overflow-hidden relative bg-[url('./assets/Background-03.png')] bg-cover bg-center bg-no-repeat bg-fixed">
         <div className="absolute inset-0 bg-[#0f1f36]/85 backdrop-blur-[1px]" />
         
-        <div className="relative z-10 w-full max-w-7xl mx-auto h-full p-3 sm:p-5 flex flex-col overflow-y-auto custom-scrollbar">
+        <div className="relative z-10 w-full max-w-7xl mx-auto h-full p-2 sm:p-3 flex flex-col overflow-y-auto custom-scrollbar">
           {currentView === 'welcome' && (
             <WelcomeScreen
               onStart={handleStart}

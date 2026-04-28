@@ -16,6 +16,7 @@
     margin: 0;
     padding: 0;
     height: 100%;
+    font-size: 14px; /* TalentLMS 1024×660 — scale all rem values down from 16px */
     font-family: var(--font-sans);
     background-color: var(--color-brand-dark);
     color: #ffffff;

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import SlideContainer from '../components/SlideContainer';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Trophy, AlertCircle, CheckCircle2, RotateCcw, 
+import {
+  Trophy, AlertCircle, CheckCircle2, RotateCcw,
   ArrowRight, Star, HelpCircle, Target, ShieldCheck,
   CheckCircle, XCircle, ShieldAlert
 } from 'lucide-react';
@@ -82,7 +82,7 @@ const quizQuestions = [
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  visible: { opacity: 1, transition: { staggerChildren: 0.08 } }
 };
 
 const itemVariants = {
@@ -97,7 +97,7 @@ export default function Modulo5({ setCanAdvance, saveScore, completeCourse }) {
   const [quizFinished, setQuizFinished] = useState(false);
 
   useEffect(() => {
-    setCanAdvance(false); 
+    setCanAdvance(false);
   }, [setCanAdvance]);
 
   const handleSelect = (optionIndex) => {
@@ -131,56 +131,56 @@ export default function Modulo5({ setCanAdvance, saveScore, completeCourse }) {
 
     return (
       <SlideContainer title="Resultados Finais" subtitle="Conclusão da Jornada WASH">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }} 
-          animate={{ opacity: 1, scale: 1 }} 
-          className="flex flex-col items-center justify-center p-6 h-full text-center"
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center justify-center p-4 h-full text-center gap-4"
         >
-          <div className={`w-32 h-32 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-2xl relative ${passed ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
-             {passed ? <Trophy className="w-16 h-16" /> : <ShieldAlert className="w-16 h-16" />}
-             <div className="absolute -bottom-2 -right-2 bg-white p-2 rounded-xl shadow-lg">
-                <Target className="w-6 h-6 text-[#0f1f36]" />
+          <div className={`w-24 h-24 rounded-[2rem] flex items-center justify-center shadow-2xl relative ${passed ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+             {passed ? <Trophy className="w-12 h-12" /> : <ShieldAlert className="w-12 h-12" />}
+             <div className="absolute -bottom-2 -right-2 bg-white p-1.5 rounded-xl shadow-lg">
+                <Target className="w-5 h-5 text-[#0f1f36]" />
              </div>
           </div>
-          
-          <h2 className="text-4xl font-black text-[#0f1f36] uppercase tracking-tighter italic mb-4">
+
+          <h2 className="text-3xl font-black text-[#0f1f36] uppercase tracking-tighter italic">
              Pontuação: {correctCount * 10}%
           </h2>
-          <p className="text-xl font-bold text-gray-400 mb-10">({correctCount} de {quizQuestions.length} questões corretas)</p>
+          <p className="text-base font-bold text-gray-400">({correctCount} de {quizQuestions.length} questões corretas)</p>
 
           <AnimatePresence mode="wait">
             {passed ? (
-              <motion.div 
+              <motion.div
                 key="passed"
-                initial={{ y: 20, opacity: 0 }} 
-                animate={{ y: 0, opacity: 1 }} 
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="bg-[#0f1f36] text-white p-10 rounded-[3rem] border-8 border-green-500 shadow-2xl max-w-lg relative overflow-hidden"
+                className="bg-[#0f1f36] text-white p-6 rounded-[2rem] border-8 border-green-500 shadow-2xl max-w-lg relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-40 h-40 bg-green-500/10 blur-3xl rounded-full" />
-                <h3 className="text-3xl font-black uppercase mb-4 text-[#fdec00] italic">Parabéns, Campeão!</h3>
-                <p className="text-lg opacity-90 leading-relaxed font-medium">
-                   Você demonstrou domínio total sobre os pilares do WASH. 
+                <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 blur-3xl rounded-full" />
+                <h3 className="text-2xl font-black uppercase mb-3 text-[#fdec00] italic">Parabéns, Campeão!</h3>
+                <p className="text-base opacity-90 leading-relaxed font-medium">
+                   Você demonstrou domínio total sobre os pilares do WASH.
                    A certificação foi aprovada e registada com sucesso.
                 </p>
-                <div className="mt-8 flex items-center gap-3 justify-center text-green-400 font-bold uppercase tracking-widest text-xs">
-                   <ShieldCheck /> Certificado Validado
+                <div className="mt-5 flex items-center gap-3 justify-center text-green-400 font-bold uppercase tracking-widest text-xs">
+                   <ShieldCheck className="w-4 h-4" /> Certificado Validado
                 </div>
               </motion.div>
             ) : (
-              <motion.div 
+              <motion.div
                 key="failed"
-                initial={{ y: 20, opacity: 0 }} 
-                animate={{ y: 0, opacity: 1 }} 
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="bg-red-50 text-red-900 p-10 rounded-[3rem] border-8 border-red-200 shadow-2xl max-w-lg"
+                className="bg-red-50 text-red-900 p-6 rounded-[2rem] border-8 border-red-200 shadow-2xl max-w-lg"
               >
-                <h3 className="text-3xl font-black uppercase mb-4 italic">Quase lá!</h3>
-                <p className="text-lg font-bold opacity-70 mb-8 leading-relaxed">
+                <h3 className="text-2xl font-black uppercase mb-3 italic">Quase lá!</h3>
+                <p className="text-base font-bold opacity-70 mb-5 leading-relaxed">
                    Para obter o certificado é necessário pelo menos 70%. <br/>Revise os conteúdos e tente novamente.
                 </p>
-                <button 
-                  className="w-full bg-[#0f1f36] text-white py-5 rounded-2xl font-black uppercase text-lg flex items-center justify-center gap-3 hover:bg-[#1a3052] transition-colors shadow-lg"
+                <button
+                  className="w-full bg-[#0f1f36] text-white py-4 rounded-2xl font-black uppercase text-base flex items-center justify-center gap-3 hover:bg-[#1a3052] transition-colors shadow-lg"
                   onClick={() => {
                      setCurrentQIndex(0);
                      setUserAnswers([]);
@@ -189,7 +189,7 @@ export default function Modulo5({ setCanAdvance, saveScore, completeCourse }) {
                      saveScore(0);
                   }}
                 >
-                  <RotateCcw /> Tentar Novamente
+                  <RotateCcw className="w-5 h-5" /> Tentar Novamente
                 </button>
               </motion.div>
             )}
@@ -204,63 +204,63 @@ export default function Modulo5({ setCanAdvance, saveScore, completeCourse }) {
 
   return (
     <SlideContainer title="Avaliação de Saída" subtitle={`Desafio ${currentQIndex + 1} de ${quizQuestions.length}`}>
-      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="flex flex-col h-full">
-        <motion.div variants={itemVariants} className="relative mb-10 group self-start max-w-2xl">
-           <div className="absolute -left-4 -top-4 w-12 h-12 bg-[#fdec00] rounded-2xl flex items-center justify-center shadow-lg transform -rotate-12 z-10">
-              <HelpCircle className="text-[#0f1f36] w-6 h-6" />
+      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="flex flex-col h-full gap-3">
+        <motion.div variants={itemVariants} className="relative self-start max-w-2xl">
+           <div className="absolute -left-3 -top-3 w-10 h-10 bg-[#fdec00] rounded-2xl flex items-center justify-center shadow-lg transform -rotate-12 z-10">
+              <HelpCircle className="text-[#0f1f36] w-5 h-5" />
            </div>
-           <h3 className="text-3xl font-black text-[#0f1f36] leading-tight bg-gray-50 p-8 rounded-[2rem] border-4 border-white shadow-xl italic tracking-tight">
+           <h3 className="text-lg font-black text-[#0f1f36] leading-tight bg-gray-50 p-5 rounded-2xl border-4 border-white shadow-xl italic tracking-tight">
              {q.q}
            </h3>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {q.options.map((opt, i) => (
-            <motion.button 
+            <motion.button
               key={i}
               variants={itemVariants}
               whileHover={!showFeedback ? { scale: 1.02 } : {}}
               onClick={() => handleSelect(i)}
-              className={`p-6 border-4 rounded-[var(--brand-radius-md)] text-left text-xl font-black transition-all flex items-center justify-between relative overflow-hidden ${
+              className={`p-4 border-4 rounded-[var(--brand-radius-md)] text-left text-base font-black transition-all flex items-center justify-between relative overflow-hidden ${
                  showFeedback && i === q.correct ? 'bg-green-50 border-green-500 shadow-inner' :
                  showFeedback && userAnswers[currentQIndex] === false && i !== q.correct ? 'opacity-20 border-gray-100' :
                  showFeedback && userAnswers[currentQIndex] === false && i === q.correct ? 'bg-green-50 border-green-500' :
                  'bg-white border-gray-100 hover:border-[#3ac4ee] hover:shadow-xl'
               }`}
             >
-              <span className="flex gap-4">
-                 <span className="opacity-30 italic">{String.fromCharCode(65+i)}</span>
+              <span className="flex gap-3">
+                 <span className="opacity-30 italic shrink-0">{String.fromCharCode(65+i)}</span>
                  {opt}
               </span>
-              {showFeedback && i === q.correct && <CheckCircle className="text-green-600 shrink-0" />}
+              {showFeedback && i === q.correct && <CheckCircle className="text-green-600 shrink-0 w-5 h-5 ml-2" />}
             </motion.button>
           ))}
         </div>
 
         <AnimatePresence>
           {showFeedback && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 50 }}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              className={`fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-4xl z-50 p-8 rounded-[3rem] border-8 shadow-2xl flex flex-col sm:flex-row items-center gap-8 ${choseCorrectly ? 'bg-white border-green-500 shadow-green-500/10' : 'bg-white border-red-500 shadow-red-500/10'}`}
+              className={`fixed bottom-16 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-3xl z-50 p-5 rounded-[2rem] border-8 shadow-2xl flex flex-col sm:flex-row items-center gap-5 ${choseCorrectly ? 'bg-white border-green-500 shadow-green-500/10' : 'bg-white border-red-500 shadow-red-500/10'}`}
             >
-               <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-lg ${choseCorrectly ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
-                  {choseCorrectly ? <CheckCircle2 className="w-10 h-10" /> : <XCircle className="w-10 h-10" />}
+               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-lg ${choseCorrectly ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                  {choseCorrectly ? <CheckCircle2 className="w-7 h-7" /> : <XCircle className="w-7 h-7" />}
                </div>
                <div className="flex-1 text-center sm:text-left">
-                  <h4 className={`font-black uppercase text-xs tracking-[0.2em] mb-1 ${choseCorrectly ? 'text-green-600' : 'text-red-400'}`}>
+                  <h4 className={`font-black uppercase text-xs tracking-[0.2em] mb-0.5 ${choseCorrectly ? 'text-green-600' : 'text-red-400'}`}>
                     {choseCorrectly ? 'Resposta Exata' : 'Feedback Construtivo'}
                   </h4>
-                  <p className="text-xl font-bold text-[#0f1f36] leading-tight">
+                  <p className="text-base font-bold text-[#0f1f36] leading-tight">
                     {choseCorrectly ? q.feedbackCorrect : q.feedbackIncorrect}
                   </p>
                </div>
-               <button 
+               <button
                  onClick={nextQuestion}
-                 className="bg-[#0f1f36] text-white px-10 py-5 rounded-2xl font-black uppercase text-sm tracking-widest hover:bg-[#3ac4ee] transition-all flex items-center gap-2 group shadow-lg"
+                 className="bg-[#0f1f36] text-white px-7 py-3 rounded-2xl font-black uppercase text-sm tracking-widest hover:bg-[#3ac4ee] transition-all flex items-center gap-2 group shadow-lg shrink-0"
                >
                  {currentQIndex < quizQuestions.length - 1 ? 'Próxima' : 'Resultado'}
-                 <ArrowRight className="group-hover:translate-x-2 transition-transform" />
+                 <ArrowRight className="group-hover:translate-x-2 transition-transform w-4 h-4" />
                </button>
             </motion.div>
           )}
