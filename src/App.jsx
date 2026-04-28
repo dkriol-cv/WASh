@@ -50,28 +50,32 @@ function App() {
     setMaxUnlockedSlidePerModule(resumeData.maxUnlockedSlidePerModule || { 1: 1 });
   }, [isReady]); // intentionally run only once on ready
 
-  // Auto-save progress to SCORM on every slide change
+  // Auto-save progress to SCORM on every slide change (defensive try/catch)
   useEffect(() => {
     if (!isReady || currentView !== 'course') return;
-    saveProgress({
-      moduleId: currentModuleId,
-      slideId: currentSlideInModule,
-      view: 'course',
-      maxUnlockedModule,
-      maxUnlockedSlidePerModule,
-    });
+    try {
+      saveProgress({
+        moduleId: currentModuleId,
+        slideId: currentSlideInModule,
+        view: 'course',
+        maxUnlockedModule,
+        maxUnlockedSlidePerModule,
+      });
+    } catch (err) {
+      console.warn('[App] saveProgress threw (SCORM error isolated):', err?.message || err);
+    }
   }, [isReady, currentView, currentModuleId, currentSlideInModule]);
 
   const handleStart = () => {
     setCurrentView('selection');
   };
 
-  // Resume from last saved position
+  // Resume: restore position and show module selection (user picks up from there)
   const handleResume = () => {
     if (!resumeData) return;
     setCurrentModuleId(resumeData.moduleId);
     setCurrentSlideInModule(resumeData.slideId);
-    setCurrentView('course');
+    setCurrentView('selection'); // show module menu, not jump directly to slide
     setIsModuleFinished(false);
   };
 
@@ -92,7 +96,9 @@ function App() {
       return;
     }
     setCurrentModuleId(id);
-    setCurrentSlideInModule(1);
+    // If resuming the exact module the user was on, restore their last slide
+    const resumeSlide = (resumeData && resumeData.moduleId === id) ? resumeData.slideId : 1;
+    setCurrentSlideInModule(resumeSlide);
     setCurrentView('course');
     setIsModuleFinished(false);
   };
@@ -231,9 +237,11 @@ function App() {
             />
           )}
           {currentView === 'selection' && (
-            <ModuleSelection 
-              maxUnlockedModule={maxUnlockedModule} 
-              onSelectModule={handleSelectModule} 
+            <ModuleSelection
+              maxUnlockedModule={maxUnlockedModule}
+              onSelectModule={handleSelectModule}
+              resumeModuleId={resumeData?.moduleId}
+              resumeSlideId={resumeData?.slideId}
             />
           )}
           {currentView === 'course' && !isModuleFinished && renderCurrentModule()}

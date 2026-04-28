@@ -11,7 +11,7 @@ const moduleIcons = {
   5: HelpCircle
 };
 
-export default function ModuleSelection({ maxUnlockedModule, onSelectModule }) {
+export default function ModuleSelection({ maxUnlockedModule, onSelectModule, resumeModuleId, resumeSlideId }) {
   return (
     <div className="h-full flex flex-col py-6">
       <div className="text-center mb-10">
@@ -35,6 +35,7 @@ export default function ModuleSelection({ maxUnlockedModule, onSelectModule }) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto w-full px-4">
         {modulesData.map((module, index) => {
           const isUnlocked = module.id <= maxUnlockedModule;
+          const isResume = module.id === resumeModuleId && resumeSlideId > 1;
           const Icon = moduleIcons[module.id] || Droplets;
           
           return (
@@ -75,9 +76,16 @@ export default function ModuleSelection({ maxUnlockedModule, onSelectModule }) {
                 {/* Status / Button */}
                 <div className="mt-auto w-full pt-6">
                   {isUnlocked ? (
-                    <div className="flex items-center justify-center gap-2 bg-[#0f1f36] text-white py-3 rounded-xl font-bold uppercase text-xs tracking-widest group-hover:bg-[#3ac4ee] transition-colors">
-                      <span>Entrar na Aventura</span>
-                      <Play className="w-3 h-3 fill-white" />
+                    <div className={`flex items-center justify-center gap-2 py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors ${
+                      isResume
+                        ? 'bg-[#fdec00] text-[#0f1f36] group-hover:bg-[#3ac4ee] group-hover:text-white'
+                        : 'bg-[#0f1f36] text-white group-hover:bg-[#3ac4ee]'
+                    }`}>
+                      {isResume ? (
+                        <><span>Retomar · Lição {resumeSlideId}</span><Play className="w-3 h-3 fill-current" /></>
+                      ) : (
+                        <><span>Entrar na Aventura</span><Play className="w-3 h-3 fill-white" /></>
+                      )}
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2 text-white/30 py-3 rounded-xl font-bold uppercase text-xs tracking-widest border border-white/10">
